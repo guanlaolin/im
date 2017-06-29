@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>用户注册</title>
+	<link rel="icon" href="../static/img/logo.png" type="image/x-icon" />
+    <link rel="stylesheet" href="../static/css/bootstrap.min.css" />
+	<link rel="stylesheet" href="../static/css/register.css"/>
+    <script src="../static/js/jquery.min.js"></script>
+    <script src="../static/js/bootstrap.min.js"></script>
+    <script src="../static/js/control.js"></script>
+  </head>
+  <body>
+    <div class="parent">
+      <div class="show">		
+		<form method="post" action="/register">
+			<h3>欢迎注册</h3>
+			
+			<input type="text" class="form-control" id="txt_uname" placeholder="请输入昵称" name="uname" /><br />
+						
+			<input type="text" class="form-control" id="txt_email" placeholder="请输入邮箱" name="email" /><br />
+			
+			<input type="password" class="form-control" id="txt_password" placeholder="请输入密码" name="password" /><br />
+			
+			<input type="password" class="form-control" id="txt_re_password" placeholder="请再次输入密码" name="repassword" /><br />
+			
+			<textarea class="form-control" id="txt_motto" placeholder="这里输入你认为最酷的话" name="motto"></textarea><br />
+			
+            <button type="submit" class="btn btn-info" id="btn_register">注册</button><br />
+			<a href="/login">已有账户？直接登陆</a>
+		</form>
+      </div>
+    </div>
+  </body>
+</html>

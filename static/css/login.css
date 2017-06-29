@@ -1,0 +1,54 @@
+body{
+    background: url(../images/login_bg.jpg) no-repeat center center fixed;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+
+}
+
+.parent{
+    position: fixed;
+    top: 50%;
+    bottom: 50%;
+    left: 50%;
+    right: 50%;
+    width: 0;
+    height: 0;
+}
+
+.show{
+    height: 400px;
+    width: 280px;
+    /* 以下两个属性必须为width,height值的负一半 */
+    margin-left: -400px;
+    margin-top: -220px;
+	
+	border:1px solid #ccc;
+	padding:30px;
+	padding-top:55px;
+	background:#ccc;
+}
+
+.remember{
+	padding:5px;
+}
+
+.show .btn{
+	width:100%;
+	margin-bottom:5px;
+}
+
+.error{
+	margin-top:20px;
+	display:none;
+}
+
+.modal .alert{
+	display:none;
+}
+
+.modal-body .form-control {
+	width:60%;
+	margin:0 auto;
+}

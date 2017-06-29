@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>用户登录</title>
+	<link rel="icon" href="../static/img/logo.png" type="image/x-icon" />
+    <link rel="stylesheet" href="../static/css/bootstrap.min.css" />
+	<link rel="stylesheet" href="../static/css/login.css"/>
+    <script src="../static/js/jquery.min.js"></script>
+	<script src="../static/js/jquery.cookie.js"></script>
+    <script src="../static/js/bootstrap.min.js"></script>
+    <script src="../static/js/control.js"></script>
+  </head>
+  <body>
+    <div class="parent">
+      <div class="show">				
+			<input type="text" class="form-control" id="txt_uid" placeholder="请输入用户名" name="uid" /><br />
+			
+			<input type="password" class="form-control" id="txt_password" placeholder="请输入密码" name="password" /><br />
+				
+			<input type="checkbox" id="cb_remember" class="remember"/> 请记住我 <br /><br />
+			
+            <button type="button" class="btn btn-info btn-login" onclick="login();" id="btn_login">登录</button><br />
+			<button type="button" class="btn btn-info btn-login" onclick="location.href='/register'" id="btn_login">注册新用户</button><br />
+			<a href="javascript:void(0);" data-toggle="modal" data-target="#reset-password">&nbsp;忘记密码？</a>
+			
+			<button type="button" class="btn btn-danger error" disabled="disabled" id="login-error"></button><br />
+      </div>
+    </div>
+	
+	<!-- 重置模态框 -->
+	<div class="modal fade" id="reset-password" tabindex="-1" role="dialog" aria-labelledby="search-friend-title" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+						&times;
+					</button>
+					<h4 class="modal-title" id="search-friend-title">
+						重置密码
+					</h4>
+				</div>
+				<div class="modal-body">
+					<input type="text" class="form-control" placeholder="请输入账号" id="uid"><br />
+					<input type="text" class="form-control" placeholder="请输入邮箱" id="email"><br />
+					<input type="password" class="form-control" placeholder="请输入新密码" id = "new-password"><br />
+					<input type="password" class="form-control" placeholder="请再次输入新密码" id = "new-re-password"><br />
+					<div class="alert alert-warning" id = "update-psw-alert">
+						
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">
+						关闭
+					</button>
+					<button type="button" class="btn btn-primary" onclick="updatePsw('reset');">
+						重置
+					</button>
+				</div>
+			</div><!-- /.modal-content -->
+		</div><!-- /.modal -->
+	</div>
+  </body>
+</html>

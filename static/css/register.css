@@ -1,0 +1,38 @@
+.parent{
+    position: fixed;
+    top: 50%;
+    bottom: 50%;
+    left: 50%;
+    right: 50%;
+    width: 0;
+    height: 0;
+}
+.show{
+    height: 460px;
+    width: 300px;
+    /* 以下两个属性必须为width,height值的负一半 */
+    margin-left: -150px;
+    margin-top: -230px;
+	background:#FFF;
+	padding-top:20px;
+	padding-left:40px;
+	padding-right:40px;
+}
+
+.btn{
+	width:100%;
+	margin-bottom:10px;
+}
+
+textarea{
+	resize:none;
+}
+
+body{
+    background: url(../images/register_bg.jpg) no-repeat center center fixed;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+
+}

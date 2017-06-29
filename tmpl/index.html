@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="initial-scale=1" />
+        <title>欢迎 - {{.ownInfo.Uname}}</title>
+		<link rel="icon" href="../static/img/logo.png" type="image/x-icon" />
+		<link rel="stylesheet" href="../static/css/bootstrap.min.css" />  
+		<link rel="stylesheet" href="../static/css/jquery.emojiarea.css" />  
+		<link rel="stylesheet" href="../static/css/style.css"/>
+		<script src="../static/js/jquery.min.js"></script>
+		<script src="../static/js/jquery.cookie.js"></script>
+		<script src="../static/js/bootstrap.min.js"></script>
+		<script src="../static/js/bootstrap-contextmenu.js"></script>
+		<script src="../static/js/jquery.emojiarea.min.js"></script>	
+		<script src="../static/js/control.js"></script>
+		<script src="../static/js/file.js"></script>
+		<script src="../static/js/ws.js"></script>
+		<script src="../static/js/video.js"></script>
+		<script src="../static/js/emojis.js"></script>
+    </head>
+	
+    <body>
+		<audio src = "../static/audio/msg.ogg" id="ring">不支持消息提示音</audio>
+        <div class="parent">
+            <div class="show">
+				<div class="header">
+					<div class="header-left">
+						<img src="/upload/portrait/{{.ownInfo.Portrait}}" class="header-img" />
+					</div>
+					<div class = "header-right">
+						<h3 id="uname">{{.ownInfo.Uname}}</h3>
+						<h5 id="motto">{{.ownInfo.Motto}}</h5>
+					</div>
+				</div><!-- header -->
+				
+				<div class="foot">
+					<div class="left">	
+						<div class="search">
+							<input type="text" class="form-control" id="name" placeholder="搜索用户">
+						</div> <!-- search -->
+						
+						<div class = "list">
+							<ul id="friend-list">
+								{{range .friendList}}
+								<li onclick="setFid({{.Uid}})" id={{.Uid}} data-toggle="context" data-target="#menu-{{.Uid}}">
+									{{.Uname}}
+									<span class="unread" id='unread_{{.Uid}}'>0</span>
+								</li>
+								<!-- <li><i class="fa fa-envelope fa-lg"></i> Inbox <span class="unread">1</span></li>m -->
+								{{end}}
+							</ul>
+						</div><!-- list -->
+						
+						<div class="left-func dropup">
+							<a data-toggle="dropdown">
+								<span class="glyphicon glyphicon-list"></span>
+							</a>
+							<ul class="dropdown-menu">
+								<li><a href="javascript:void(0);" onclick="userInfo({{.ownInfo.Uid}})">个人资料</a></li>
+								<li class="divider"></li>
+								<li><a href="javascript:void(0);" data-toggle="modal" data-target="#change-password">修改密码</a></li>
+								<li class="divider"></li>
+								<li><a href="javascript:void(0);" data-toggle="modal" data-target="#about">关于系统</a></li>
+								<li class="divider"></li>
+								<li><a href="javascript:void(0);" onclick="logout()">退出登录</a></li>
+							</ul>
+							
+							<a data-toggle="modal" data-target="#search-friend">
+								<span class="glyphicon glyphicon-search"></span>
+							</a>
+						</div><!-- left-func -->
+					</div><!-- left -->
+					
+					<div class="right" id="foot-right">
+						<div class="right-title">
+							<h3 class="right-title-name" id="right-title-name"></h3>
+						</div>
+						<div class="right-show" id="right-show">
+						</div>
+						<div class="right-func">
+							&nbsp;&nbsp;
+							<a>
+								<span class="glyphicon glyphicon-user emoji" id="emoji" title="发送表情"></span>
+							</a>
+							&nbsp;
+							<a href="javascript:void(0);" data-toggle="modal" data-target="#video-chat" onclick="videoChat()" title="视频聊天">
+								<span class="glyphicon glyphicon-facetime-video"></span>
+							</a>
+							&nbsp;
+							<a href="javascript:void(0);" data-toggle="modal" data-target="#send-file" title="发送文件">
+								<span class="glyphicon glyphicon-folder-open"></span>
+							</a>
+							<a href="javascript:void(0);" onclick="clearHistory()" title="清空历史记录" class="clear-history">
+								<span class="glyphicon glyphicon-trash"></span>
+							</a>
+						</div>
+						<div class="right-input">
+							<textarea id = "right-edit" class="emojis-wysiwyg right-edit" placeholder="输入消息"></textarea>
+							<!--
+							<div class="right-edit" contenteditable=true id="right-edit">
+							</div>-->
+							<div class="right-btn">
+								<button type="button" class="btn btn-default" onclick="closeRight()">关闭</button>
+								<button type="button" class="btn btn-default" onclick="sendMsg()">发送</button>
+							</div>
+						</div>
+					</div><!-- right -->
+				</div><!-- foot -->
+            </div><!-- show -->
+        </div><!-- parent -->
+		
+		<!-- 添加好友模态框 -->
+		<div class="modal fade" id="search-friend" tabindex="-1" role="dialog" aria-labelledby="search-friend-title" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+							&times;
+						</button>
+						<h4 class="modal-title" id="search-friend-title">
+							添加新朋友
+						</h4>
+					</div>
+					<div class="modal-body">
+						<div class="input-group search-friend">
+							<input type="text" class="form-control" placeholder="请输入用户ID" id="search-uid">
+							<span class="input-group-btn">
+								<button class="btn btn-default" type="button" onclick="searchUser()">查找</button>
+							</span>
+						</div><!-- /input-group -->
+					</div>
+					<div class="modal-footer">
+						<div class="alert alert-warning search-alert" id = "search-alert"></div>
+						<table class="table table-condensed table-hover table-striped tb-friend-list" id="tb-friend-list" >
+							<thead>
+								<tr>
+									<th>用户ID</th>
+									<th>昵称</th>
+									<th>操作</th>
+								</tr>
+							 </thead>
+							<tbody>
+								<tr>
+									<td id='user-list-id'>1000</td>
+									<td id='user-list-name'>zhongguoren</td>
+									<td>
+										<a href="javascript:void(0)" id='user-list-func'>
+											<span class="glyphicon glyphicon-plus"></span>
+										</a>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div><!-- /.modal-content -->
+			</div><!-- /.modal -->
+		</div>
+		
+		<!-- 系统信息模态框 -->
+		<div class="modal fade" id="about" tabindex="-1" role="dialog" aria-labelledby="about-title" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+							&times;
+						</button>
+						<h4 class="modal-title" id="search-friend-title">
+							关于本系统
+						</h4>
+					</div>
+					<div class="modal-body">
+						<h5>
+						本系统由官嘉林独立构建，前端基于Bootstrap框架，后端使用golang语言，现已实现：<br /><br />
+						（1）文本聊天；<br /><br />
+						（2）视频聊天；<br /><br />
+						（3）文件发送；<br /><br />
+						（4）表情发送；<br /><br />
+						基于开源的精神，本人已将项目源代码上传到了github上，地址为：
+						<a href="https://github.com/guanjialin/chat">官老林-聊天系统</a><br /><br />
+						欢迎访问！如在使用过程中发现问题，请联系本人，谢谢！
+						</h5>
+					</div>
+				</div><!-- /.modal-content -->
+			</div><!-- /.modal -->
+		</div>
+		
+		<!-- 文件发送模态框 -->
+		<div class="modal fade" id="send-file" tabindex="-1" role="dialog" aria-labelledby="about-title" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+							&times;
+						</button>
+						<h4 class="modal-title" id="search-friend-title">
+							发送文件
+						</h4>
+					</div>
+					<div class="modal-body">
+						<input type='file' id='upload-file'/>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">
+							取消
+						</button>
+						<button type="button" class="btn btn-primary" onclick='sendFile()'>
+							发送
+						</button>
+					</div>
+				</div><!-- /.modal-content -->
+			</div><!-- /.modal -->
+		</div>
+		
+		<!-- 视频聊天模态框 -->
+		<div class="modal fade" id="video-chat" tabindex="-1" role="dialog" aria-labelledby="about-title" aria-hidden="true" data-backdrop=false>
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+							&times;
+						</button>
+						<h4 class="modal-title" id="search-friend-title">
+							视频聊天
+						</h4>
+					</div>
+					<div class="modal-body">
+						<div class = 'video-body'>
+							<video class = "local-video" id="localVideo" autoplay>本地</video>
+							<video class = "remote-video" id="remoteVideo" autoplay></video>
+						</div>
+					</div>
+					<div class="modal-footer">
+					<!--
+						<div class="alert alert-warning video-chat-alert" id = "video-chat-alert">
+							好友拒绝建立视频聊天。
+						</div>
+						-->
+					</div>
+				</div><!-- /.modal-content -->
+			</div><!-- /.modal -->
+		</div>
+		
+	<!-- 修改密码模态框 -->
+	<div class="modal fade change-password" id="change-password" tabindex="-1" role="dialog" aria-labelledby="search-friend-title" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+						&times;
+					</button>
+					<h4 class="modal-title" id="search-friend-title">
+						修改密码
+					</h4>
+				</div>
+				<div class="modal-body">
+					<input type="password" class="form-control" placeholder="请输入旧密码" id="old-password"><br />
+					<input type="password" class="form-control" placeholder="请输入新密码" id = "new-password"><br />
+					<input type="password" class="form-control" placeholder="请再次输入新密码" id = "new-re-password"><br />
+					<div class="alert alert-warning update-psw-alert" id = "update-psw-alert">
+						
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">
+						关闭
+					</button>
+					<button type="button" class="btn btn-primary" onclick="updatePsw('change');">
+						重置
+					</button>
+				</div>
+			</div><!-- /.modal-content -->
+		</div><!-- /.modal -->
+	</div>
+	
+	<!-- 用户详情模态框 -->
+	<div class="modal fade user-info" id="user-info" tabindex="-1" role="dialog" aria-labelledby="search-friend-title" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+						&times;
+					</button>
+					<h4 class="modal-title" id="search-friend-title">
+						用户资料
+					</h4>
+				</div>
+				<div class="modal-body">
+					<input type="text" class="form-control" placeholder="用户编号" id="info-uid" value=""><br />
+					<input type="text" class="form-control" placeholder="用户昵称" id="info-uname" value=""><br />
+					<input type="text" class="form-control" placeholder="用户邮箱" id = "info-email" value=""><br />
+					<textarea class="form-control" placeholder="个性签名" id="info-motto" value=""></textarea>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">
+						关闭窗口
+					</button>
+					<button type="button" class="btn btn-primary" onclick="updatePsw('change');">
+						修改资料
+					</button>
+				</div>
+			</div><!-- /.modal-content -->
+		</div><!-- /.modal -->
+	</div>
+	
+	
+	<!-- 右键菜单 -->
+	{{range .friendList}}
+	<div id="menu-{{.Uid}}">
+		<ul class="dropdown-menu" role="menu">
+			<li><a tabindex="-1" href="javascript:void(0);" onclick="setFid({{.Uid}})">发送消息</a></li>
+			<li><a tabindex="-1" href="javascript:void(0);" onclick="userInfo({{.Uid}})">查看资料</a></li>
+			<li><a tabindex="-1" href="javascript:void(0);" onclick="deleteFriend({{.Uid}});">删除好友</a></li>
+		</ul>
+	</div>
+	{{end}}
+	
+    </body>
+</html>
