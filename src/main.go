@@ -2,15 +2,17 @@ package main
 
 import (
 	"controller"
-	"log"
+	"logger"
 	"net/http"
 	"time"
 
 	"github.com/gorilla/websocket"
 )
 
+var l *logger.Logger = logger.NewLoggerWithFile(logger.LEVEL_DEBUG, "../log/mylog.log")
+
 func init() {
-	log.SetFlags(log.Lshortfile | log.LstdFlags) //给日志加上文件名和行数
+	//log.SetFlags(log.Lshortfile | log.LstdFlags) //给日志加上文件名和行数
 }
 
 func main() {
@@ -39,7 +41,8 @@ func main() {
 	//SSL
 	err := http.ListenAndServeTLS(":8888", "../etc/cacert.pem", "../etc/privtkey.pem", nil)
 	if err != nil {
-		log.Fatalln("Listen error", err.Error())
+		//log.Fatalln("Listen error", err.Error())
+		l.FATAL("Listen error", err.Error())
 	}
 }
 
@@ -51,10 +54,12 @@ func Ping() {
 			err := controller.Conns[k].WriteMessage(websocket.PingMessage, []byte(""))
 			if err != nil {
 				delete(controller.Conns, k)
-				log.Println(k, "已经从服务器断开")
+				//log.Println(k, "已经从服务器断开")
+				l.DEBUG(k, "已经从服务器断开")
 				continue
 			}
-			log.Println("往", k, "发送心跳包成功")
+			l.DEBUG("往", k, "发送心跳包成功")
+			//log.Println("往", k, "发送心跳包成功")
 		}
 	}
 }
