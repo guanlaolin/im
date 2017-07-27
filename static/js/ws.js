@@ -1,5 +1,11 @@
-remotePC = new RTCPeerConnection();
-pc = new RTCPeerConnection();
+var iceServer = {
+    "iceServers": [{
+        "url": "stun:stun.ideasip.com"
+    }]
+};
+
+remotePC = new RTCPeerConnection(iceServer);
+pc = new RTCPeerConnection(iceServer);
 
 pc.onicecandidate = function (event) {
 	if (event.candidate !== null) {
@@ -55,8 +61,7 @@ window.onload = function () {
 	//getUserMedia = (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia);
 
 	//ws连接
-	ws = new WebSocket("wss://192.168.43.219:8888/ws");
-	//ws = new WebSocket("wss://127.0.0.1:8888/ws");
+	ws = new WebSocket("wss://127.0.0.1:8888/ws");
 	ws.onopen = function () {
 		var str = {
 			"type": MSG_IDENTITY,

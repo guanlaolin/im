@@ -17,6 +17,8 @@ func init() {
 
 func main() {
 	//go Ping()
+
+	//添加路由
 	http.HandleFunc("/", controller.IndexHandle)
 	http.HandleFunc("/ws", controller.WSHandle)               //聊天主页
 	http.HandleFunc("/login", controller.LoginHandle)         //用户登录
@@ -37,6 +39,8 @@ func main() {
 	http.Handle("/upload/",
 		http.StripPrefix("/upload/",
 			http.FileServer(http.Dir("../upload")))) //下载文件
+
+	//由于WebRTC原因，使用https
 	//err := http.ListenAndServe(":8888", nil) //监听8888端口
 	//SSL
 	err := http.ListenAndServeTLS(":8888", "../etc/cacert.pem", "../etc/privtkey.pem", nil)
