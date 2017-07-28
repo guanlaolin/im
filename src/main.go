@@ -5,13 +5,21 @@ import (
 	"logger"
 	"net/http"
 	"time"
+	"tool"
 
 	"github.com/gorilla/websocket"
 )
 
+//配置文件路径
+var confPath = "../config/config.json"
+
 var l *logger.Logger = logger.NewLoggerWithFile(logger.LEVEL_DEBUG, "../log/mylog.log")
 
 func init() {
+	err := tool.ConfSetPath(confPath)
+	if err != nil {
+		l.FATAL("初始化配置文件失败", err)
+	}
 }
 
 func main() {
@@ -30,9 +38,10 @@ func main() {
 			http.FileServer(http.Dir("../upload")))) //下载文件
 
 	//SSL
-	err := http.ListenAndServeTLS(":8888", "../etc/cacert.pem", "../etc/privtkey.pem", nil)
+	err := http.ListenAndServeTLS(tool.Conf("addr"),
+		tool.Conf("cert"), tool.Conf("key"), nil)
 	if err != nil {
-		l.FATAL("Listen error", err.Error())
+		l.FATAL("监听失败", err.Error())
 	}
 }
 
