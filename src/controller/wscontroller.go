@@ -2,10 +2,8 @@
 package controller
 
 import (
-	//"bytes"
 	"encoding/base64"
 	"encoding/json"
-	//"io"
 	"log"
 	"model"
 	"net/http"

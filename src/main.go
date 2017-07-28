@@ -2,6 +2,7 @@ package main
 
 import (
 	"controller"
+	"flag"
 	"logger"
 	"net/http"
 	"time"
@@ -23,13 +24,15 @@ func init() {
 }
 
 func main() {
+	flag.Parse()
+
 	//路由
 	for url, handler := range urls {
 		http.HandleFunc(url, handler)
 	}
 
 	//静态文件处理
-	//实际应用交由nginx解析，这里仅仅是为了开发方便
+	//实际应用交由nginx解析，或者使用cdn，这里仅仅是为了开发方便
 	http.Handle("/static/",
 		http.StripPrefix("/static/",
 			http.FileServer(http.Dir("../static")))) //静态文件
@@ -58,7 +61,6 @@ func Ping() {
 				continue
 			}
 			l.DEBUG("往", k, "发送心跳包成功")
-			//log.Println("往", k, "发送心跳包成功")
 		}
 	}
 }
