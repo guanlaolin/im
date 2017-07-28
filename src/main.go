@@ -12,27 +12,16 @@ import (
 var l *logger.Logger = logger.NewLoggerWithFile(logger.LEVEL_DEBUG, "../log/mylog.log")
 
 func init() {
-	//log.SetFlags(log.Lshortfile | log.LstdFlags) //给日志加上文件名和行数
 }
 
 func main() {
-	//go Ping()
-
-	//添加路由
-	http.HandleFunc("/", controller.IndexHandle)
-	http.HandleFunc("/ws", controller.WSHandle)               //聊天主页
-	http.HandleFunc("/login", controller.LoginHandle)         //用户登录
-	http.HandleFunc("/logout", controller.LogoutHandle)       //用户注销
-	http.HandleFunc("/register", controller.RegisterHandle)   //用户注册
-	http.HandleFunc("/search", controller.SearchUserHandle)   //查找用户
-	http.HandleFunc("/userinfo", controller.UserInfoHandle)   //获取用户信息
-	http.HandleFunc("/addfriend", controller.AddFriendHandle) //添加好友
-	http.HandleFunc("/delete", controller.DelFriendHandle)    //删除好友 有bug，删除好友没有顺带删除未读消息
-	http.HandleFunc("/unread", controller.UnReadMsgHandle)    //未读消息
-	http.HandleFunc("/updatepsw", controller.UpdatePswHandle) //重置密码
-	http.HandleFunc("/success", controller.SuccessHandle)     //成功
+	//路由
+	for url, handler := range urls {
+		http.HandleFunc(url, handler)
+	}
 
 	//静态文件处理
+	//实际应用交由nginx解析，这里仅仅是为了开发方便
 	http.Handle("/static/",
 		http.StripPrefix("/static/",
 			http.FileServer(http.Dir("../static")))) //静态文件
@@ -40,12 +29,9 @@ func main() {
 		http.StripPrefix("/upload/",
 			http.FileServer(http.Dir("../upload")))) //下载文件
 
-	//由于WebRTC原因，使用https
-	//err := http.ListenAndServe(":8888", nil) //监听8888端口
 	//SSL
 	err := http.ListenAndServeTLS(":8888", "../etc/cacert.pem", "../etc/privtkey.pem", nil)
 	if err != nil {
-		//log.Fatalln("Listen error", err.Error())
 		l.FATAL("Listen error", err.Error())
 	}
 }
