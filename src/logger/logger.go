@@ -13,6 +13,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"time"
 )
 
 const (
@@ -58,7 +59,8 @@ func NewLogger(level int, dst io.Writer) *Logger {
 	*Logger
 */
 func NewLoggerWithFile(level int, path string) *Logger {
-	file, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0666)
+	file, err := os.OpenFile(path+time.Now().Format("20060102"),
+		os.O_APPEND|os.O_CREATE|os.O_RDWR, 0666)
 	if err != nil {
 		log.Fatalln("初始化日志失败：", err)
 	}
@@ -69,34 +71,34 @@ func NewLoggerWithFile(level int, path string) *Logger {
 func (l *Logger) DEBUG(arg ...interface{}) {
 	if l.level >= LEVEL_DEBUG {
 		l.logger.SetPrefix(fmt.Sprintf("%-6s", "DEBUG"))
-		l.logger.Println(arg)
+		l.logger.Output(2, fmt.Sprintln(arg))
 	}
 }
 
 func (l *Logger) INFO(arg ...interface{}) {
 	if l.level >= LEVEL_INFO {
 		l.logger.SetPrefix(fmt.Sprintf("%-6s", "INFO"))
-		l.logger.Println(arg)
+		l.logger.Output(2, fmt.Sprintln(arg))
 	}
 }
 
 func (l *Logger) WARN(arg ...interface{}) {
 	if l.level >= LEVEL_WARN {
 		l.logger.SetPrefix(fmt.Sprintf("%-6s", "WARN"))
-		l.logger.Println(arg)
+		l.logger.Output(2, fmt.Sprintln(arg))
 	}
 }
 
 func (l *Logger) ERROR(arg ...interface{}) {
 	if l.level >= LEVEL_ERROR {
 		l.logger.SetPrefix(fmt.Sprintf("%-6s", "ERROR"))
-		l.logger.Println(arg)
+		l.logger.Output(2, fmt.Sprintln(arg))
 	}
 }
 
 func (l *Logger) FATAL(arg ...interface{}) {
 	if l.level >= LEVEL_FATAL {
 		l.logger.SetPrefix(fmt.Sprintf("%-6s", "FATAL"))
-		l.logger.Fatalln(arg)
+		l.logger.Output(2, fmt.Sprintln(arg))
 	}
 }
