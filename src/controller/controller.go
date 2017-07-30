@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"html/template"
 	"log"
+	"logger"
 	"model"
 	"net/http"
 	"strconv"
@@ -11,36 +12,30 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-const TMPL_DIR = "../tmpl"
+//日志初始化
+var l = logger.NewLoggerWithFile(logger.LEVEL_DEBUG, "../log/controller_log")
 
+//保存websocket连接
 var Conns = make(map[int]*websocket.Conn)
+
+//模板对应文件名
+const (
+	TMPL_DIR      = "../tmpl/"
+	TMPL_REGISTER = TMPL_DIR + "register.html"
+	TMPL_LOGIN    = TMPL_DIR + "/login.html"
+)
 
 //用户登录逻辑
 //1、设置cookie
 //2、写入redis
 func LoginHandle(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-		//判断用户是否已经登录过了
-		cookie, err := r.Cookie("uid")
-		if err == nil {
-			//有cookie，可能已经登录过了
-			uid, _ := strconv.Atoi(cookie.Value)
-			loginUser := model.NewLoginUser(uid, "")
-			if loginUser.IsLogin() {
-				log.Println(strconv.Itoa(uid) + "已经登录了")
-				http.Redirect(w, r, "/", http.StatusFound)
-				return
-			}
+		if IsLogin(r) {
+			//若用户已经登录，则自动跳转到首页
+			http.Redirect(w, r, "/", http.StatusFound)
 		}
 
-		//解析模板文件
-		tmpl, err := template.ParseFiles(TMPL_DIR + "/login.html")
-		if err != nil {
-			log.Println("解析页面login.html失败", err.Error())
-			http.Error(w, "服务器错误，登录失败", http.StatusInternalServerError)
-			return
-		}
-		tmpl.Execute(w, nil)
+		RenderTmpl(TMPL_LOGIN, nil, w)
 	} else if r.Method == http.MethodPost {
 		//获取uid
 		uid, err := strconv.Atoi(r.FormValue("uid"))
@@ -103,13 +98,7 @@ func LogoutHandle(w http.ResponseWriter, r *http.Request) {
 //用户注册逻辑
 func RegisterHandle(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-		tmpl, err := template.ParseFiles(TMPL_DIR + "/register.html")
-		if err != nil {
-			log.Println("解析页面register.html失败", err.Error())
-			http.Error(w, "服务器错误，请重试", http.StatusInternalServerError)
-			return
-		}
-		tmpl.Execute(w, nil)
+		RenderTmpl(TMPL_REGISTER, nil, w)
 	} else if r.Method == http.MethodPost {
 		uname := r.FormValue("uname")
 		password := r.FormValue("password")
