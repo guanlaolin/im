@@ -1,5 +1,8 @@
 {
 	"addr":":8888",
 	"cert":"../etc/cacert.pem",
-	"key":"../etc/privtkey.pem"
+	"key":"../etc/privtkey.pem",
+	
+	"cookie-secret":"123",
+	"session-name":"session"
 }

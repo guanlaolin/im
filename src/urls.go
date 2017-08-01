@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-//路由规则
+//路由规则，暂时使用以下规则，后面修改为RESTful风格
 var urls = map[string]func(w http.ResponseWriter, r *http.Request){
 	"/":          controller.IndexHandle,
 	"/ws":        controller.WSHandle,         //聊天主页
@@ -20,3 +20,14 @@ var urls = map[string]func(w http.ResponseWriter, r *http.Request){
 	"/updatepsw": controller.UpdatePswHandle,  //重置密码
 	"/success":   controller.SuccessHandle,    //成功
 }
+
+//拟RESTful风格路由规则如下
+//使用github.com/gorilla/mux包
+//var urls = map[string]func(w http.ResponseWriter, r *http.Request){
+//	"/":						//首页
+//	"/ws":						//websocket通道
+//	"/session/{uid}":			//会话信息，登录创建会话，注销销毁会话
+//	"/user/{uid}":				//用户相关，如注册等
+//	"/friend/{fid}":			//用户好友相关，如添加好友，删除好友等
+//	"/message/{catagory}/{id}":	//消息
+//}
