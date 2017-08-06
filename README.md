@@ -2,6 +2,13 @@
 
 <strong>本程序在实现之初由于实在是赶时间，各种考虑不周，各种小bug，各种不优雅的代码，现正进行重构，所以几乎每天代码都可能会变</strong><br />
 
+<strong>本项目已切换到分支v2中继续进行开发，在v2开发完成之前，master只进行bug修复，代码不再修改</strong> <br />
+v2主要修改如下：<br />
+1、使用RESTful风格 <br/>
+2、路由使用github.com/gorilla/mux <br />
+3、改cookie为session，使用github.com/gorilla/sessions <br />
+4、数据库使用github.com/jinzhu/gorm <br />
+
 <strong>说明：</strong> <br />
 这是本人的毕业设计题目，获得了优秀毕业设计，在这里共享代码仅供参考。
 
