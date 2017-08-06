@@ -66,9 +66,7 @@ func (u *User) CreateUser() int64 {
 
 //用户登录
 func (u *LoginUser) Login() bool {
-	if !u.checkLoginUser() {
-		return false
-	}
+	//检查数据
 
 	//连接数据库
 	d := db.GetDBConn()
@@ -122,9 +120,7 @@ func (u *LoginUser) IsLogin() bool {
 
 //添加好友
 func (u *LoginUser) AddFriend(uid int) bool {
-	if !u.checkLoginUser() || !CheckUid(uid) {
-		return false
-	}
+	//检查数据
 
 	//判断是否已经登录
 	if !u.IsLogin() {
@@ -160,9 +156,7 @@ func (u *LoginUser) AddFriend(uid int) bool {
 
 //判断是否已经是好友，是返回false，不是返回true，错误返回false
 func (u *LoginUser) IsNotFriend(fid int) bool {
-	if !u.checkLoginUser() || !CheckUid(fid) {
-		return false
-	}
+	//检查数据
 
 	//判断是否已经登录
 	if !u.IsLogin() {
@@ -191,9 +185,7 @@ func (u *LoginUser) IsNotFriend(fid int) bool {
 
 //删除好友
 func (u *LoginUser) DelFriend(uid int) bool {
-	if !u.checkLoginUser() || !CheckUid(uid) {
-		return false
-	}
+	//检查数据
 
 	//判断是否已经登录
 	if !u.IsLogin() {
@@ -219,9 +211,7 @@ func (u *LoginUser) DelFriend(uid int) bool {
 
 //用户是否已经登录
 func IsLogin(uid int) bool {
-	if !CheckUid(uid) {
-		return false
-	}
+	//检查数据
 
 	conn := db.GetNoConn()
 	if conn == nil {
@@ -244,9 +234,7 @@ func IsLogin(uid int) bool {
 
 //获取好友列表
 func (u *LoginUser) GetFriends() (friends []SummaryUser) {
-	if !u.checkLoginUser() {
-		return nil
-	}
+	//检查数据
 
 	//判断用户是否已经登录
 	if !u.IsLogin() {
@@ -288,9 +276,8 @@ func (u *LoginUser) GetFriends() (friends []SummaryUser) {
 
 //获取单个用户简要信息
 func (u *LoginUser) GetUser(uid int) (su SummaryUser) {
-	if !u.checkLoginUser() || !CheckUid(uid) {
-		return
-	}
+	//检查数据
+
 	if !u.IsLogin() {
 		return
 	}
@@ -320,9 +307,8 @@ func (u *LoginUser) GetUser(uid int) (su SummaryUser) {
 
 //获取单个用户详细信息
 func (u *LoginUser) GetUserInfo(uid int) (user User) {
-	if !u.checkLoginUser() || !CheckUid(uid) {
-		return
-	}
+	//检查数据
+
 	if !u.IsLogin() {
 		return
 	}

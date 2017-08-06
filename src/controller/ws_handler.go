@@ -1,4 +1,3 @@
-//由于ws代码比较场，故专门分一个文件
 package controller
 
 import (
@@ -16,7 +15,7 @@ import (
 
 //ws逻辑
 //1、写入Conns
-func WSHandle(w http.ResponseWriter, r *http.Request) {
+func WsHandler(w http.ResponseWriter, r *http.Request) {
 	//记录当前用户
 	var cur_uid int = 0
 

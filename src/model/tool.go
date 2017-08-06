@@ -28,50 +28,9 @@ func (user *User) checkUser() bool {
 }
 
 //测试用户合法性
-func (user *LoginUser) checkLoginUser() bool {
-	return CheckUid(user.Uid)
-}
-
-//测试用户合法性
 func (user *SummaryUser) checkSummaryUser() bool {
 	if user.Uid == 0 || user.Uname == "" {
 		log.Println("用户名非法")
-		return false
-	}
-	return true
-}
-
-//测试用户id合法性
-func CheckUid(uid int) bool {
-	if uid == 0 {
-		log.Println("用户非法")
-		return false
-	}
-	return true
-}
-
-//检查密码合法性
-func CheckPsw(psw string) bool {
-	if len(psw) < 6 || len(psw) > 20 {
-		log.Println("密码必须为6-20")
-		return false
-	}
-	return true
-}
-
-//检查用户名合法性
-func CheckUname(uname string) bool {
-	if uname == "" {
-		log.Println("用户名非法")
-		return false
-	}
-	return true
-}
-
-//检查邮箱合法性
-func CheckEmail(email string) bool {
-	if len(email) < 6 || len(email) > 32 {
-		log.Println("邮箱长度必须为6-32")
 		return false
 	}
 	return true

@@ -59,7 +59,7 @@ func NewLogger(level int, dst io.Writer) *Logger {
 	*Logger
 */
 func NewLoggerWithFile(level int, path string) *Logger {
-	file, err := os.OpenFile(path+time.Now().Format("20060102"),
+	file, err := os.OpenFile(path+time.Now().Format("_20060102"),
 		os.O_APPEND|os.O_CREATE|os.O_RDWR, 0666)
 	if err != nil {
 		log.Fatalln("初始化日志失败：", err)

@@ -8,15 +8,11 @@ import (
 	"net/http"
 	"tool"
 
-	"github.com/gorilla/sessions"
 	"github.com/gorilla/websocket"
 )
 
-//session初始化
-var store = sessions.NewCookieStore([]byte(tool.Conf("cookie-secret")))
-var session *sessions.Session
-
 //解析并渲染模板文件
+//已进行模板文件是否存在检测
 func RenderTmpl(path string, data interface{}, w http.ResponseWriter) error {
 	if err := tool.ExistFile(path); err != nil {
 		l.DEBUG("模板文件不存在：", path)

@@ -1,14 +1,12 @@
 package main
 
 import (
-	"controller"
 	"flag"
 	"logger"
 	"net/http"
-	"time"
 	"tool"
 
-	"github.com/gorilla/websocket"
+	"github.com/gorilla/mux"
 )
 
 var l *logger.Logger = logger.NewLoggerWithFile(logger.LEVEL_DEBUG, "../log/log")
@@ -25,9 +23,11 @@ func init() {
 func main() {
 	//路由
 	l.DEBUG("开始配置路由")
+	router := mux.NewRouter()
 	for url, handler := range urls {
-		http.HandleFunc(url, handler)
+		router.HandleFunc(url, handler)
 	}
+	http.Handle("/", router)
 	l.DEBUG("路由配置完成")
 
 	//静态文件处理
@@ -39,7 +39,7 @@ func main() {
 		http.StripPrefix("/upload/",
 			http.FileServer(http.Dir("../upload")))) //下载文件
 
-	//SSL
+	//使用SSL
 	l.DEBUG("启动监听端口", tool.Conf("addr"), "使用的证书是：", tool.Conf("cert"),
 		"使用的key是：", tool.Conf("key"))
 	err := http.ListenAndServeTLS(tool.Conf("addr"),

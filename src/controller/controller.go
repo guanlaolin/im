@@ -9,171 +9,83 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+	"tool"
 
+	"github.com/gorilla/sessions"
 	"github.com/gorilla/websocket"
+)
+
+//模板对应文件名
+const (
+	TMPL_DIR      = "../tmpl/"
+	TMPL_INDEX    = TMPL_DIR + "index.html"
+	TMPL_REGISTER = TMPL_DIR + "register.html"
+	TMPL_LOGIN    = TMPL_DIR + "login.html"
 )
 
 //日志初始化
 var l = logger.NewLoggerWithFile(logger.LEVEL_DEBUG, "../log/controller_log")
 
+//session
+var store = sessions.NewCookieStore([]byte(tool.Conf("session-secret")))
+
 //保存websocket连接
 var Conns = make(map[int]*websocket.Conn)
 
-//模板对应文件名
-const (
-	TMPL_DIR      = "../tmpl/"
-	TMPL_REGISTER = TMPL_DIR + "register.html"
-	TMPL_LOGIN    = TMPL_DIR + "/login.html"
-)
-
-//用户登录逻辑
-//1、设置cookie
-//2、写入redis
-func LoginHandle(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodGet {
-		if IsLogin(r) {
-			//若用户已经登录，则自动跳转到首页
-			http.Redirect(w, r, "/", http.StatusFound)
-		}
-
-		RenderTmpl(TMPL_LOGIN, nil, w)
-	} else if r.Method == http.MethodPost {
-		//获取uid
-		uid, err := strconv.Atoi(r.FormValue("uid"))
-		if err != nil {
-			log.Println("uid不合法", err.Error())
-			w.Write([]byte("请输入合法用户id"))
-			return
-		}
-		//获取用户密码
-		password := r.FormValue("password")
-		//判断是否记住用户
-		remember := r.FormValue("remember")
-
-		//检查数据合法性
-		if !model.CheckUid(uid) || !model.CheckPsw(password) {
-			w.Write([]byte("用户id或密码格式不合法"))
-			return
-		}
-
-		loginUser := model.NewLoginUser(uid, password)
-		if !loginUser.Login() {
-			log.Println("登录失败")
-			w.Write([]byte("用户名或密码错误，请确认"))
-			return
-		}
-		log.Println("用户", uid, "登录成功")
-		maxAge := 0
-		if remember == "true" {
-			//如果用户点了记住密码，设置cookie有效期为7天
-			maxAge = 7 * 24 * 60 * 60
-		}
-		http.SetCookie(w, &http.Cookie{Name: "uid", Value: strconv.Itoa(uid), MaxAge: maxAge})
-		w.Write([]byte("success"))
-	} else {
-		http.Error(w, "未实现的方法", http.StatusMethodNotAllowed)
-		return
-	}
-}
-
-//用户注销逻辑
-//1、清除redis
-//2、清除Conns
-func LogoutHandle(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodGet {
-		uid, err := strconv.Atoi(r.FormValue("uid"))
-		if err != nil {
-			log.Println("uid有误，注销失败", err)
-			w.Write([]byte("上送的uid有误，注销失败，请重试"))
-			return
-		}
-		delete(Conns, uid)
-		model.NewLoginUser(uid, "").Logout()
-		log.Println("用户", uid, "注销成功")
-		w.Write([]byte("success"))
-	} else {
-		http.Error(w, "不支持的方法", http.StatusMethodNotAllowed)
-	}
-}
-
-//用户注册逻辑
-func RegisterHandle(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodGet {
-		RenderTmpl(TMPL_REGISTER, nil, w)
-	} else if r.Method == http.MethodPost {
-		uname := r.FormValue("uname")
-		password := r.FormValue("password")
-		repassword := r.FormValue("repassword")
-		motto := r.FormValue("motto")
-		email := r.FormValue("email") //目前的机制由于找回密码需要必须填写邮箱
-		portrait := "default.jpg"     //暂时写死
-
-		//检查数据合法性
-		if !model.CheckUname(uname) || !model.CheckPsw(password) {
-			w.Write([]byte("用户名或密码格式不合法"))
-			return
-		}
-		if password != repassword {
-			w.Write([]byte("两次输入的密码不相同"))
-			return
-		}
-		//bug邮箱校验
-
-		user := model.NewUser(uname, password, motto, portrait, email)
-		uid := user.CreateUser()
-		if 0 == uid {
-			w.Write([]byte("注册失败，请重新注册"))
-			return
-		}
-		log.Println("用户", uid, "注册成功")
-
-		http.Redirect(w, r, "/success?ref=register&uid="+strconv.FormatInt(uid, 10), http.StatusFound)
-	} else {
-		http.Error(w, "未实现的方法", http.StatusMethodNotAllowed)
-		return
-	}
-}
-
 //主聊天页面逻辑
-func IndexHandle(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodGet {
-		datas := make(map[string]interface{})
+func IndexHandler(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodGet:
+		IndexGetHandler(w, r)
+	default:
+		//不支持的方法
+	}
+}
 
-		cookie, err := r.Cookie("uid")
-		if err != nil {
-			log.Println("读取cookie失败，用户未登陆", err)
-			//说明未登陆，跳转
-			http.Redirect(w, r, "/login", http.StatusFound)
-			return
-		}
-		uid, _ := strconv.Atoi(cookie.Value)
+//解析index.html页面
+func IndexGetHandler(w http.ResponseWriter, r *http.Request) {
+	datas := make(map[string]interface{})
 
-		loginUser := model.NewLoginUser(uid, "")
+	//判断是否已经登录
+	session, err := store.Get(r, tool.Conf("session-name"))
+	if err != nil {
+		//500
+	}
 
-		//获取用户本身概要信息
-		smu := loginUser.GetUser(uid)
-		log.Println("用户信息", smu)
-		datas["ownInfo"] = smu
-
-		//获取好友列表
-		friends := loginUser.GetFriends()
-		log.Println("好友列表", friends)
-		datas["friendList"] = friends
-
-		tmpl, err := template.ParseFiles(TMPL_DIR + "/index.html")
-		if err != nil {
-			log.Println("解析页面index.html失败", err.Error())
-			http.Error(w, "服务器错误，请刷新", http.StatusInternalServerError)
-			return
-		}
-		if err = tmpl.Execute(w, datas); err != nil {
-			log.Println("渲染模板失败", err.Error())
-		}
-		log.Println("渲染模板index.html成功")
-	} else {
-		http.Error(w, "未实现的方法", http.StatusMethodNotAllowed)
+	uid := session.Values["uid"]
+	if uid != "" {
+		//未登陆，跳转到登录页面
+		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
+
+	//用户好友信息考虑调用接口，这里只解析index.html
+	if err = RenderTmpl(TMPL_INDEX, nil, w); err != nil {
+		//500
+	}
+
+	//	loginUser := model.NewLoginUser(uid, "")
+
+	//	//获取用户本身概要信息
+	//	smu := loginUser.GetUser(uid)
+	//	log.Println("用户信息", smu)
+	//	datas["ownInfo"] = smu
+
+	//	//获取好友列表
+	//	friends := loginUser.GetFriends()
+	//	log.Println("好友列表", friends)
+	//	datas["friendList"] = friends
+
+	//	tmpl, err := template.ParseFiles(TMPL_DIR + "/index.html")
+	//	if err != nil {
+	//		log.Println("解析页面index.html失败", err.Error())
+	//		http.Error(w, "服务器错误，请刷新", http.StatusInternalServerError)
+	//		return
+	//	}
+	//	if err = tmpl.Execute(w, datas); err != nil {
+	//		log.Println("渲染模板失败", err.Error())
+	//	}
+	//	log.Println("渲染模板index.html成功")
 }
 
 //查找用户
