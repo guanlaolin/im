@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"strconv"
 	"tool"
+
+	"github.com/satori/go.uuid"
 )
 
 //回话管理
@@ -25,16 +27,20 @@ func SessionGetHandler(w http.ResponseWriter, r *http.Request) {
 	session, err := store.Get(r, tool.Conf("session-name"))
 	if err != nil {
 		//500错误
+		http.Error(w, "获取session失败", http.StatusInternalServerError)
+		return
 	}
 
 	//说明已经登录，自动跳转到主页面
-	if session.Values["uid"] != "" {
+	if !session.IsNew {
 		http.Redirect(w, r, "/", http.StatusFound)
 		return
 	}
 
 	if err := RenderTmpl(TMPL_LOGIN, nil, w); err != nil {
 		//500错误
+		http.Error(w, "获取session失败", http.StatusInternalServerError)
+		return
 	}
 }
 
@@ -84,6 +90,13 @@ func SessionPostHandler(w http.ResponseWriter, r *http.Request) {
 		//登录失败
 		w.Write([]byte("false"))
 	}
+
+	//返回uuid
+	uuid, err := uuid.NewV4()
+	if err != nil {
+		//
+	}
+	w.Write(uuid.Bytes())
 }
 
 //用户注销逻辑

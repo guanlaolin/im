@@ -9,9 +9,30 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"tool"
 
 	"github.com/gorilla/websocket"
+	"github.com/satori/go.uuid"
 )
+
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  2048,
+	WriteBufferSize: 2048,
+	CheckOrigin:     CheckOrigin,
+}
+
+//同源策略
+func CheckOrigin(r *http.Request) bool {
+	config := tool.ConfStrSlic("origin")
+
+	for _, v := range config {
+		if r.Host == v {
+			return true
+		}
+	}
+
+	return false
+}
 
 //ws逻辑
 //1、写入Conns
@@ -22,14 +43,25 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 	//当前上传文件名
 	var cur_file_name string
 
+	//uuid
+	uuid := uuid.FromStringOrNil(r.FormValue("uuid"))
+	if !Manager.UUIDs[uuid] {
+		//403错误
+		http.Error(w, "请求非法", http.StatusForbidden)
+		return
+	}
+
 	//转化为websocket协议
-	conn, err := websocket.Upgrade(w, r, nil, 1024, 1024)
+	conn, err := upgrader.Upgrade(w, r, nil)
+	//conn, err := websocket.Upgrade(w, r, nil, 1024, 1024)
 	if err != nil {
 		log.Println("Upgrade error")
 		http.Error(w, "转websocket失败", http.StatusInternalServerError)
 	}
 	log.Println("websocket success")
 	defer conn.Close()
+
+	Manager.Upgrade <- NewClient(uuid, conn)
 
 	//循环读取报文
 	for {
@@ -49,7 +81,7 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 			//bug
 			log.Println("判定为身份消息")
 			cur_uid = msg.From
-			if !model.CheckUid(cur_uid) {
+			if !model.ValidateUid(cur_uid) {
 				log.Println("用户id不合法，连接断开", err)
 				conn.WriteMessage(websocket.CloseMessage, []byte("上送的uid有误"))
 				return

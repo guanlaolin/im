@@ -32,4 +32,5 @@ var urls = map[string]func(w http.ResponseWriter, r *http.Request){
 	"/user/{uid}":              controller.UserHandler,    //用户相关，如注册、获取用户信息等
 	"/friend/{fid}":            controller.FriendHandler,  //用户好友相关，如添加好友，删除好友等
 	"/message/{catagory}/{id}": controller.MessageHandler, //消息
+	//"/error":                   controller.ErrorHandler,   //错误处理
 }

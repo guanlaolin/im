@@ -1,0 +1,4 @@
+package controller
+
+func HTTPError() {
+}

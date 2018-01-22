@@ -6,12 +6,13 @@ package tool
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"os"
 )
 
 //配置信息
-var config map[string]string
+var config map[string]interface{}
 
 //配置文件路径
 var confPath string
@@ -49,6 +50,10 @@ func ConfParse() error {
 		return err
 	}
 
+	if !json.Valid(bs) {
+		return errors.New("配置文件内容格式有误")
+	}
+
 	if err := json.Unmarshal(bs, &config); err != nil {
 		return err
 	}
@@ -58,5 +63,28 @@ func ConfParse() error {
 
 //获取key对应的配置文件值，请注意，本函数并未处理key为空的情况
 func Conf(key string) string {
-	return config[key]
+	v, ok := config[key].(string)
+	if ok {
+		return v
+	}
+	return ""
+}
+
+func ConfStrSlic(key string) []string {
+	var str []string
+
+	val, ok := config[key].([]interface{})
+	if !ok {
+		return nil
+	}
+
+	for _, v := range val {
+		rv, ok := v.(string)
+		if !ok {
+			return nil
+		}
+		str = append(str, rv)
+	}
+
+	return str
 }

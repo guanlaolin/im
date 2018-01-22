@@ -4,5 +4,10 @@
 	"key":"../etc/privtkey.pem",
 	
 	"session-secret":"123",
-	"session-name":"session"
+	"session-name":"session",
+	
+	"origin":[
+		"127.0.0.1",
+		"localhost"
+	]
 }

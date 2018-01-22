@@ -32,6 +32,9 @@ var store = sessions.NewCookieStore([]byte(tool.Conf("session-secret")))
 //保存websocket连接
 var Conns = make(map[int]*websocket.Conn)
 
+//记录uuid
+var UUIDS []byte
+
 //主聊天页面逻辑
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
@@ -44,20 +47,28 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 
 //解析index.html页面
 func IndexGetHandler(w http.ResponseWriter, r *http.Request) {
-	datas := make(map[string]interface{})
+	//	datas := make(map[string]interface{})
 
 	//判断是否已经登录
 	session, err := store.Get(r, tool.Conf("session-name"))
 	if err != nil {
-		//500
+		//500 错误
 	}
 
-	uid := session.Values["uid"]
-	if uid != "" {
-		//未登陆，跳转到登录页面
+	if session.IsNew {
+		//未登陆，跳转到登录页面，还需优化
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
+
+	/*
+		uid := session.Values["uid"]
+		if uid != "" {
+			//未登陆，跳转到登录页面
+			http.Redirect(w, r, "/login", http.StatusFound)
+			return
+		}
+	*/
 
 	//用户好友信息考虑调用接口，这里只解析index.html
 	if err = RenderTmpl(TMPL_INDEX, nil, w); err != nil {
@@ -102,7 +113,7 @@ func SearchUserHandle(w http.ResponseWriter, r *http.Request) {
 		loginUser := model.NewLoginUser(uid, "")
 
 		fid, err := strconv.Atoi(r.FormValue("fid"))
-		if err != nil || !model.CheckUid(fid) {
+		if err != nil || !model.ValidateUid(fid) {
 			log.Println("上送的uid不合法", err)
 			w.Write([]byte("请输入合法的用户id"))
 			return
@@ -139,7 +150,7 @@ func UserInfoHandle(w http.ResponseWriter, r *http.Request) {
 		loginUser := model.NewLoginUser(uid, "")
 
 		fid, err := strconv.Atoi(r.FormValue("fid"))
-		if err != nil || !model.CheckUid(fid) {
+		if err != nil || !model.ValidateUid(fid) {
 			log.Println("上送的uid不合法", err)
 			w.Write([]byte("请输入合法的用户id"))
 			return
@@ -177,7 +188,7 @@ func AddFriendHandle(w http.ResponseWriter, r *http.Request) {
 
 		fid, _ := strconv.Atoi(r.FormValue("fid"))
 		log.Println(fid)
-		if !model.CheckUid(fid) {
+		if !model.ValidateUid(fid) {
 			w.Write([]byte("您输入的id不合法"))
 			return
 		}
@@ -209,7 +220,7 @@ func DelFriendHandle(w http.ResponseWriter, r *http.Request) {
 
 		fid, _ := strconv.Atoi(r.FormValue("fid"))
 		log.Println(fid)
-		if !model.CheckUid(fid) {
+		if !model.ValidateUid(fid) {
 			w.Write([]byte("您输入的id不合法"))
 			return
 		}
@@ -271,13 +282,13 @@ func UpdatePswHandle(w http.ResponseWriter, r *http.Request) {
 		var user *model.LoginUser
 
 		uid, err := strconv.Atoi(r.FormValue("uid"))
-		if err != nil || !model.CheckUid(uid) {
+		if err != nil || !model.ValidateUid(uid) {
 			w.Write([]byte("请输入合法的uid"))
 			return
 		}
 		new_password := r.FormValue("newpassword")
 		re_new_password := r.FormValue("newrepassword")
-		if !model.CheckPsw(new_password) {
+		if !model.ValidatePsw(new_password) {
 			w.Write([]byte("请输入合法的密码"))
 			return
 		}
@@ -292,7 +303,7 @@ func UpdatePswHandle(w http.ResponseWriter, r *http.Request) {
 		case "change": //修改密码
 			//修改密码需要校验旧密码
 			old_password := r.FormValue("oldpassword")
-			if !model.CheckPsw(old_password) {
+			if !model.ValidatePsw(old_password) {
 				w.Write([]byte("请输入合法的密码"))
 				return
 			}
@@ -304,7 +315,7 @@ func UpdatePswHandle(w http.ResponseWriter, r *http.Request) {
 		case "reset": //重置密码
 			//重置密码需要校验邮箱
 			email := r.FormValue("email")
-			if !model.CheckEmail(email) {
+			if !model.ValidateEmail(email) {
 				w.Write([]byte("邮箱不合法"))
 				return
 			}
